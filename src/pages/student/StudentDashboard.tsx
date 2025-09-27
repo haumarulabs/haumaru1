@@ -173,11 +173,11 @@ export default function StudentDashboard() {
       <div className="space-y-8">
         {/* Welcome Section */}
         <div>
-          <h2 className="text-3xl font-bold tracking-tight">Welcome back, {user?.name || user?.email}!</h2>
-          <p className="text-muted-foreground mt-2">Manage your VPN access and monitor your usage</p>
+          <h2 className="text-3xl font-bold tracking-tight">Welcome back, {user?.name || user?.email}! 🎓</h2>
+          <p className="text-muted-foreground mt-2">Continue your cybersecurity journey with hands-on labs and expert courses</p>
         </div>
 
-        {/* VPN Status Card */}
+        {/* Lab Access Card */}
         <Card className="border-primary/20 shadow-lg">
           <CardHeader className="pb-4">
             <div className="flex items-center justify-between">
@@ -186,15 +186,15 @@ export default function StudentDashboard() {
                   <Shield className="h-5 w-5 text-white" />
                 </div>
                 <div>
-                  <CardTitle>VPN Profile Status</CardTitle>
-                  <CardDescription>Your current VPN configuration</CardDescription>
+                  <CardTitle>Lab Environment Access</CardTitle>
+                  <CardDescription>Your cybersecurity lab credentials</CardDescription>
                 </div>
               </div>
               {vpnProfile && (
                 <Badge 
                   className={vpnProfile.days_remaining! > 7 ? 'bg-success text-white' : 'bg-warning text-white'}
                 >
-                  {vpnProfile.days_remaining! > 0 ? 'Active' : 'Expired'}
+                  {vpnProfile.days_remaining! > 0 ? '✅ Active' : '❌ Expired'}
                 </Badge>
               )}
             </div>
@@ -204,15 +204,17 @@ export default function StudentDashboard() {
               <div className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div className="space-y-1">
-                    <p className="text-sm text-muted-foreground">Certificate Name</p>
-                    <p className="font-medium">{vpnProfile.cn}</p>
+                    <p className="text-sm text-muted-foreground">Lab Access ID</p>
+                    <p className="font-medium font-mono">{vpnProfile.cn}</p>
                   </div>
                   <div className="space-y-1">
-                    <p className="text-sm text-muted-foreground">Role</p>
-                    <p className="font-medium capitalize">{vpnProfile.role}</p>
+                    <p className="text-sm text-muted-foreground">Access Level</p>
+                    <p className="font-medium capitalize">
+                      {vpnProfile.role === 'student' ? '🎓 Student Labs' : vpnProfile.role}
+                    </p>
                   </div>
                   <div className="space-y-1">
-                    <p className="text-sm text-muted-foreground">Expires</p>
+                    <p className="text-sm text-muted-foreground">Access Expires</p>
                     <p className="font-medium">{new Date(vpnProfile.expiry_utc).toLocaleDateString()}</p>
                   </div>
                 </div>
@@ -221,7 +223,7 @@ export default function StudentDashboard() {
                 {vpnProfile.days_remaining! > 0 && (
                   <div className="space-y-2">
                     <div className="flex items-center justify-between text-sm">
-                      <span className="text-muted-foreground">Days Remaining</span>
+                      <span className="text-muted-foreground">Lab Access Remaining</span>
                       <span className="font-medium">{vpnProfile.days_remaining} days</span>
                     </div>
                     <Progress 
@@ -239,7 +241,7 @@ export default function StudentDashboard() {
                     variant="outline"
                   >
                     <Download className="h-4 w-4" />
-                    Download Profile
+                    Download Lab Config
                   </Button>
                   {vpnProfile.days_remaining! < 7 && (
                     <Button 
@@ -248,39 +250,47 @@ export default function StudentDashboard() {
                       disabled={isExtending}
                     >
                       <Clock className="h-4 w-4" />
-                      Extend Access
+                      Extend Lab Access
                     </Button>
                   )}
                 </div>
               </div>
             ) : (
               <div className="text-center py-8">
-                <Shield className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                <p className="text-muted-foreground mb-4">No VPN profile found</p>
+                <div className="p-4 rounded-full bg-muted inline-block mb-4">
+                  <Shield className="h-12 w-12 text-muted-foreground" />
+                </div>
+                <p className="text-muted-foreground mb-4">No lab access configured</p>
                 <Button 
-                  onClick={() => navigate('/student/request-vpn')}
+                  onClick={() => navigate('/student/request-lab-access')}
                   className="bg-gradient-primary"
                 >
                   <Plus className="h-4 w-4 mr-2" />
-                  Request VPN Access
+                  Request Lab Access
                 </Button>
               </div>
             )}
           </CardContent>
         </Card>
 
-        {/* Plans Grid */}
+        {/* Course Plans Grid */}
         <div>
-          <h3 className="text-xl font-semibold mb-4">Available Plans</h3>
+          <h3 className="text-xl font-semibold mb-4">📚 Available Course Packages</h3>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {plans.map((plan) => (
-              <Card key={plan.id} className="hover:shadow-lg transition-shadow">
+              <Card key={plan.id} className="hover:shadow-lg transition-shadow border-border/50">
                 <CardHeader>
                   <div className="flex items-center justify-between">
-                    <CardTitle className="text-lg">{plan.code}</CardTitle>
+                    <CardTitle className="text-lg">
+                      {plan.code === 'BASIC' ? '🥉 Basic' : 
+                       plan.code === 'PRO' ? '🥈 Professional' : 
+                       plan.code === 'ENTERPRISE' ? '🥇 Enterprise' : plan.code} Package
+                    </CardTitle>
                     <Badge variant="secondary">{plan.days} days</Badge>
                   </div>
-                  <CardDescription>{plan.description || `${plan.days}-day VPN access`}</CardDescription>
+                  <CardDescription>
+                    {plan.description || `${plan.days}-day access to cybersecurity labs and courses`}
+                  </CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-3">
@@ -291,7 +301,7 @@ export default function StudentDashboard() {
                       size="sm"
                     >
                       <CreditCard className="h-4 w-4 mr-2" />
-                      Purchase
+                      Enroll Now
                     </Button>
                   </div>
                 </CardContent>
@@ -300,27 +310,30 @@ export default function StudentDashboard() {
           </div>
         </div>
 
-        {/* Recent Sessions */}
+        {/* Recent Lab Sessions */}
         {recentSessions.length > 0 && (
           <Card>
             <CardHeader>
               <div className="flex items-center gap-2">
                 <Activity className="h-5 w-5 text-primary" />
-                <CardTitle>Recent Sessions</CardTitle>
+                <CardTitle>Recent Lab Sessions</CardTitle>
               </div>
+              <CardDescription>Your recent lab environment activity</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
                 {recentSessions.map((session) => (
                   <div key={session.id} className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
                     <div className="flex items-center gap-4">
-                      <Wifi className="h-4 w-4 text-muted-foreground" />
+                      <div className="p-2 rounded bg-primary/10">
+                        <Wifi className="h-4 w-4 text-primary" />
+                      </div>
                       <div>
                         <p className="text-sm font-medium">
-                          {new Date(session.connected_at).toLocaleString()}
+                          Lab Session - {new Date(session.connected_at).toLocaleString()}
                         </p>
                         <p className="text-xs text-muted-foreground">
-                          IP: {session.real_ip} → {session.virtual_ip}
+                          Environment: {session.virtual_ip} | Location: {session.real_ip}
                         </p>
                       </div>
                     </div>
@@ -338,6 +351,30 @@ export default function StudentDashboard() {
             </CardContent>
           </Card>
         )}
+
+        {/* Learning Resources */}
+        <Card>
+          <CardHeader>
+            <CardTitle>🚀 Quick Access Resources</CardTitle>
+            <CardDescription>Essential tools for your cybersecurity training</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <Button variant="outline" className="justify-start gap-2">
+                <Calendar className="h-4 w-4" />
+                Course Schedule
+              </Button>
+              <Button variant="outline" className="justify-start gap-2">
+                <Shield className="h-4 w-4" />
+                Security Tools
+              </Button>
+              <Button variant="outline" className="justify-start gap-2">
+                <Activity className="h-4 w-4" />
+                Lab Exercises
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     </Layout>
   );

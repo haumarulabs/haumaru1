@@ -199,21 +199,47 @@ export default function AdminDashboard() {
       <div className="space-y-8">
         {/* Header */}
         <div>
-          <h2 className="text-3xl font-bold tracking-tight">Admin Dashboard</h2>
-          <p className="text-muted-foreground mt-2">Manage users, VPN certificates, and monitor system activity</p>
+          <h2 className="text-3xl font-bold tracking-tight">Instructor Dashboard 🛡️</h2>
+          <p className="text-muted-foreground mt-2">Manage students, lab access, and monitor training progress</p>
         </div>
 
         {/* Stats Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Users</CardTitle>
+              <CardTitle className="text-sm font-medium">Total Students</CardTitle>
               <Users className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{stats.totalUsers}</div>
               <p className="text-xs text-muted-foreground">
-                {stats.activeUsers} active, {stats.pendingUsers} pending
+                {stats.activeUsers} enrolled, {stats.pendingUsers} pending
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Active Lab Access</CardTitle>
+              <Shield className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{stats.activeVPNs}</div>
+              <p className="text-xs text-muted-foreground">
+                Lab environments issued
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Active Lab Sessions</CardTitle>
+              <Activity className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{stats.activeSessions}</div>
+              <p className="text-xs text-muted-foreground">
+                Students currently in labs
               </p>
             </CardContent>
           </Card>
@@ -246,13 +272,13 @@ export default function AdminDashboard() {
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Revenue</CardTitle>
+              <CardTitle className="text-sm font-medium">Course Revenue</CardTitle>
               <CreditCard className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">${stats.totalRevenue}</div>
               <p className="text-xs text-muted-foreground">
-                Total earnings
+                Total enrollment fees
               </p>
             </CardContent>
           </Card>
@@ -261,10 +287,10 @@ export default function AdminDashboard() {
         {/* Main Content Tabs */}
         <Tabs defaultValue="users" className="space-y-4">
           <TabsList className="grid w-full grid-cols-4">
-            <TabsTrigger value="users">Users</TabsTrigger>
-            <TabsTrigger value="vpn">VPN Certificates</TabsTrigger>
-            <TabsTrigger value="sessions">Sessions</TabsTrigger>
-            <TabsTrigger value="plans">Plans</TabsTrigger>
+            <TabsTrigger value="users">Students</TabsTrigger>
+            <TabsTrigger value="vpn">Lab Access</TabsTrigger>
+            <TabsTrigger value="sessions">Lab Sessions</TabsTrigger>
+            <TabsTrigger value="plans">Course Plans</TabsTrigger>
           </TabsList>
 
           {/* Users Tab */}
@@ -273,8 +299,8 @@ export default function AdminDashboard() {
               <CardHeader>
                 <div className="flex items-center justify-between">
                   <div>
-                    <CardTitle>User Management</CardTitle>
-                    <CardDescription>Manage user accounts and permissions</CardDescription>
+                    <CardTitle>Student Management</CardTitle>
+                    <CardDescription>Manage student accounts and enrollments</CardDescription>
                   </div>
                   <div className="flex items-center gap-2">
                     <div className="relative">
@@ -352,7 +378,7 @@ export default function AdminDashboard() {
                                 className="gap-1"
                               >
                                 <Shield className="h-3 w-3" />
-                                Issue VPN
+                                Grant Lab Access
                               </Button>
                             )}
                           </div>
@@ -365,19 +391,19 @@ export default function AdminDashboard() {
             </Card>
           </TabsContent>
 
-          {/* VPN Tab */}
+          {/* Lab Access Tab */}
           <TabsContent value="vpn" className="space-y-4">
             <Card>
               <CardHeader>
-                <CardTitle>VPN Certificates</CardTitle>
-                <CardDescription>Manage issued VPN certificates</CardDescription>
+                <CardTitle>Lab Access Management</CardTitle>
+                <CardDescription>Manage student lab environment credentials</CardDescription>
               </CardHeader>
               <CardContent>
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>CN</TableHead>
-                      <TableHead>Role</TableHead>
+                      <TableHead>Access ID</TableHead>
+                      <TableHead>Type</TableHead>
                       <TableHead>Expiry</TableHead>
                       <TableHead>Status</TableHead>
                       <TableHead>Actions</TableHead>
@@ -388,8 +414,10 @@ export default function AdminDashboard() {
                       const isExpired = new Date(profile.expiry_utc) < new Date();
                       return (
                         <TableRow key={profile.cn}>
-                          <TableCell className="font-medium">{profile.cn}</TableCell>
-                          <TableCell className="capitalize">{profile.role}</TableCell>
+                          <TableCell className="font-medium font-mono">{profile.cn}</TableCell>
+                          <TableCell className="capitalize">
+                            {profile.role === 'student' ? '🎓 Student Lab' : profile.role}
+                          </TableCell>
                           <TableCell>{new Date(profile.expiry_utc).toLocaleDateString()}</TableCell>
                           <TableCell>
                             <Badge variant={isExpired ? "secondary" : "default"}>

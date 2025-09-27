@@ -1,4 +1,5 @@
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Clock, ArrowLeft, RefreshCw } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
@@ -43,19 +44,33 @@ export default function PendingApproval() {
               <Clock className="h-8 w-8 text-warning" />
             </div>
           </div>
-          <CardTitle className="text-2xl">Account Pending Approval</CardTitle>
+          <CardTitle className="text-2xl">Enrollment Pending Approval</CardTitle>
           <CardDescription>
-            Your account has been created successfully
+            Welcome to Haumaru Academy! 🎓
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="bg-muted/50 rounded-lg p-4 text-center">
             <p className="text-sm text-muted-foreground mb-2">
-              Your registration is complete! An administrator will review and activate your account shortly.
+              Your academy registration is complete! An instructor will review and approve your enrollment shortly.
             </p>
             <p className="text-sm font-medium">
-              You'll receive an email notification once your account is approved.
+              Once approved, you'll gain access to:
             </p>
+            <div className="grid grid-cols-2 gap-2 mt-3">
+              <div className="text-xs bg-background rounded p-2">
+                🔬 Hands-on Labs
+              </div>
+              <div className="text-xs bg-background rounded p-2">
+                📚 Course Materials
+              </div>
+              <div className="text-xs bg-background rounded p-2">
+                🛡️ Security Tools
+              </div>
+              <div className="text-xs bg-background rounded p-2">
+                🏆 Certifications
+              </div>
+            </div>
           </div>
 
           {user && (
@@ -70,6 +85,10 @@ export default function PendingApproval() {
                   <span className="font-medium">{user.name}</span>
                 </p>
               )}
+              <p className="text-sm">
+                <span className="text-muted-foreground">Status:</span>{' '}
+                <Badge variant="secondary" className="ml-1">Pending Instructor Approval</Badge>
+              </p>
             </div>
           )}
 
@@ -90,6 +109,10 @@ export default function PendingApproval() {
               Check Status
             </Button>
           </div>
+
+          <p className="text-xs text-center text-muted-foreground pt-2">
+            You'll receive an email notification once your enrollment is approved
+          </p>
         </CardContent>
       </Card>
     </div>
