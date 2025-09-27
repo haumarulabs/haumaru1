@@ -1,21 +1,23 @@
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Shield, Mail, AlertCircle, ArrowRight } from 'lucide-react';
+import { Shield, LogIn, AlertCircle, RefreshCw, ExternalLink } from 'lucide-react';
 import { useAuth } from '@/lib/auth';
 import { useToast } from '@/hooks/use-toast';
 
 export default function Login() {
   const navigate = useNavigate();
-  const { login, isAuthenticated, isAdmin, isStudent, user } = useAuth();
+  const { checkAuth, isAuthenticated, isAdmin, isStudent, user } = useAuth();
   const { toast } = useToast();
-  const [email, setEmail] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
+  const [isChecking, setIsChecking] = useState(false);
   const [error, setError] = useState('');
+
+  useEffect(() => {
+    // Auto-check authentication on load
+    handleCheckAuth();
+  }, []);
 
   useEffect(() => {
     // Redirect if already authenticated
@@ -24,42 +26,34 @@ export default function Login() {
         navigate('/admin');
       } else if (isStudent && user.is_active) {
         navigate('/student');
+      } else if (!user.is_active) {
+        navigate('/pending-approval');
       }
     }
   }, [isAuthenticated, isAdmin, isStudent, user, navigate]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleCheckAuth = async () => {
+    setIsChecking(true);
     setError('');
-    setIsLoading(true);
-
+    
     try {
-      const success = await login(email);
-      if (success) {
-        toast({
-          title: "Login successful",
-          description: "Redirecting to your portal...",
-        });
-        
-        // Navigate based on user role
-        const authState = useAuth.getState();
-        if (authState.isAdmin) {
-          navigate('/admin');
-        } else if (authState.isStudent) {
-          if (authState.user?.is_active) {
-            navigate('/student');
-          } else {
-            setError('Your account is pending admin approval. Please check back later.');
-          }
-        }
-      } else {
-        setError('Login failed. Please check your credentials.');
+      // Check if user is authenticated via Cloudflare Access
+      await checkAuth();
+      
+      // If authenticated, the useEffect above will handle navigation
+      if (!isAuthenticated) {
+        setError('Not authenticated via Cloudflare Access. Please sign in through the Cloudflare Access portal.');
       }
     } catch (error) {
-      setError('An error occurred during login. Please try again.');
+      setError('Unable to verify authentication status. Please try again.');
     } finally {
-      setIsLoading(false);
+      setIsChecking(false);
     }
+  };
+
+  const handleCloudflareLogin = () => {
+    // Redirect to Cloudflare Access team URL
+    window.location.href = 'https://haumarugroup.cloudflareaccess.com';
   };
 
   return (
@@ -76,67 +70,69 @@ export default function Login() {
               <Shield className="h-8 w-8 text-white" />
             </div>
           </div>
-          <CardTitle className="text-2xl text-center">Welcome to Haumaru Portal</CardTitle>
+          <CardTitle className="text-2xl text-center">Haumaru Portal</CardTitle>
           <CardDescription className="text-center">
-            Sign in with your email to access your VPN services
+            Secure VPN Management System
           </CardDescription>
         </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="email">Email Address</Label>
-              <div className="relative">
-                <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="you@example.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="pl-10"
-                  required
-                  disabled={isLoading}
-                />
-              </div>
+        <CardContent className="space-y-4">
+          {/* Cloudflare Access Info */}
+          <div className="bg-muted/50 rounded-lg p-4 space-y-2">
+            <div className="flex items-center gap-2 mb-2">
+              <Shield className="h-4 w-4 text-primary" />
+              <p className="font-medium text-sm">Protected by Cloudflare Access</p>
             </div>
+            <p className="text-sm text-muted-foreground">
+              This application uses Cloudflare Access for authentication. 
+              You'll be redirected to sign in with your organization's identity provider.
+            </p>
+          </div>
 
-            {error && (
-              <Alert variant="destructive">
-                <AlertCircle className="h-4 w-4" />
-                <AlertDescription>{error}</AlertDescription>
-              </Alert>
-            )}
+          {error && (
+            <Alert variant="destructive">
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
+          )}
 
-            <div className="bg-muted/50 rounded-lg p-3 text-sm text-muted-foreground">
-              <p className="font-medium mb-1">Authentication via Cloudflare</p>
-              <p>Your email will be verified through Cloudflare Access. New users will need admin approval to activate their accounts.</p>
-            </div>
-
+          {/* Primary Actions */}
+          <div className="space-y-3">
+            {/* Sign In via Cloudflare */}
             <Button
-              type="submit"
+              onClick={handleCloudflareLogin}
               className="w-full bg-gradient-primary hover:opacity-90 transition-opacity"
-              disabled={isLoading}
+              disabled={isChecking}
             >
-              {isLoading ? (
-                "Signing in..."
+              <LogIn className="mr-2 h-4 w-4" />
+              Sign In via Cloudflare Access
+              <ExternalLink className="ml-2 h-3 w-3" />
+            </Button>
+
+            {/* Check Authentication Status */}
+            <Button
+              onClick={handleCheckAuth}
+              variant="outline"
+              className="w-full"
+              disabled={isChecking}
+            >
+              {isChecking ? (
+                <>
+                  <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
+                  Checking Authentication...
+                </>
               ) : (
                 <>
-                  Sign In
-                  <ArrowRight className="ml-2 h-4 w-4" />
+                  <RefreshCw className="mr-2 h-4 w-4" />
+                  Check Authentication Status
                 </>
               )}
             </Button>
-          </form>
+          </div>
 
-          <div className="mt-6 text-center text-sm text-muted-foreground">
-            <p>Don't have an account?</p>
-            <Button
-              variant="link"
-              className="text-primary"
-              onClick={() => navigate('/register')}
-            >
-              Register here
-            </Button>
+          {/* Info Text */}
+          <div className="text-center text-sm text-muted-foreground pt-2">
+            <p>Already authenticated? Click "Check Authentication Status"</p>
+            <p className="mt-1">First time? Sign in and an account will be created for you</p>
           </div>
         </CardContent>
       </Card>

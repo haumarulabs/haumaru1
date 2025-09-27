@@ -23,9 +23,11 @@ export const useAuth = create<AuthState>((set) => ({
   isAdmin: false,
   isStudent: false,
 
-  login: async (email: string) => {
+  login: async (email?: string) => {
     try {
-      const response = await api.login({ email });
+      // In production, the backend will read the email from Cloudflare Access headers
+      // The email parameter is optional for testing/development
+      const response = await api.login({ email: email || '' });
       if (response.ok && response.data) {
         const { user } = response.data;
         set({
